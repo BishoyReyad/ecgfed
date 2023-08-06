@@ -55,7 +55,7 @@ body, html {
       h = ch;
       });
     socket.onopen = function(e) {
-      console.log("[open] Connection established");
+      // console.log("[open] Connection established");
     
     }; 
 
@@ -113,9 +113,9 @@ body, html {
     ADCString[wState]=JSON.parse(JSON.parse(event.data).data).x;
     wState++;
 wState==maxState?(startState==1?null:(startState=1,stringToArray(ADCString[0],ADCArray1))):null;
-console.log(`${nextTime-millitime} ${ADCArray1.length}`)
+// console.log(`${nextTime-millitime} ${ADCArray1.length}`)
 
-console.log(wState)
+// console.log(wState)
 millitime=nextTime
     }
     };
