@@ -23,7 +23,8 @@ body, html {
 <body>
   <canvas id="c"></canvas>
   <script>
-console.log(SECRETS)
+    let appKey ="bea3cf75e9f8f18cc70a";
+    let secretKey ="6e94b23f65859b39498d";
     let socket = new WebSocket("wss://ws-eu.pusher.com/app/"+appKey+"?client=js&version=2.1&protocol=7 HTTP/1.1");
     
     var c = document.getElementById("c");
@@ -200,7 +201,7 @@ ADCArrayDraw[index]=ADCArray1[arrayIndex]
      
      ctx.stroke();
      // //  console.log(ADC[index]);
-     console.log(10)
+     
        requestId = window.requestAnimationFrame(Draw);
      }
      requestId = window.requestAnimationFrame(Draw);  
