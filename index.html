@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<head>
+  <title>Pusher Test</title>
+  <!-- <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
+<style>
+      * {
+   margin: 0;
+   padding: 0;
+}
+body, html {
+   height:100%;
+}
+#canvas {
+   position:absolute;
+   height:100%; width:100%;
+}
+</style>
+ 
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <script>
+
+    let socket = new WebSocket("wss://ws-eu.pusher.com/app/"+appKey+"?client=js&version=2.1&protocol=7 HTTP/1.1");
+    
+    var c = document.getElementById("c");
+    var ctx = c.getContext("2d");
+    c.width = window.innerWidth
+    c.height = window.innerHeight
+    var cw = c.width ;
+    var ch = c.height ;
+    var   cx = cw ,
+    cy = ch ;
+    var rad = Math.PI / 180;
+    var w =cw,
+    h = ch;
+    //ctx.strokeStyle = "Cornsilk";
+    // ctx.lineWidth = 4;
+    var ADC=[];
+    var Adc;
+    var index=0;
+    
+    window.addEventListener("resize", function() {
+      c.width = window.innerWidth
+      c.height = window.innerHeight
+      cw = c.width;
+      ch = c.height;
+      cx = cw ,
+      cy = ch ;
+      w = cw;
+      h = ch;
+      });
+    socket.onopen = function(e) {
+      console.log("[open] Connection established");
+    
+    }; 
+
+    // var ADCString;
+    var ADCArray1=[];
+    var ADCArray2=[];
+    var ADCArray3=[];
+    var stringIndex=0 ;var ADCArrayDraw=[];
+    var arrayIndex=0;
+    var arrayNIndex=[];
+    var ADCArrays=[ADCArray1,ADCArray2]
+
+    var ADCString=[];
+    var millitime=0;
+    var nextTime=0;
+    var startState=0,maxState=3,wState=0,rState=0;
+    function stringToArray(string,array){
+      var ADCArray=[];
+      ADCArray = string.split(" ");
+      ADCArray[ADCArray.length-1]!=""?null:ADCArray.splice(ADCArray.length-1);
+      for (let index1 = 0; index1 < ADCArray.length; index1++) {
+        array[index1]=parseInt(ADCArray[index1]);
+  
+      }
+      for (let index = array.length-1; index >= 0; index--) {
+        if (array.length>ADCArray.length) {
+          array.splice(array.length-1);
+        }else{
+          break;
+        }
+      }
+    }
+    socket.onmessage = function(event) {
+      // console.log(`[message] Data received from server: ${event.data}`);
+      // console.log(JSON.parse(JSON.parse(event.data).data).socket_id)
+      if(JSON.parse(event.data).event=="pusher:connection_established"){
+      var hash = CryptoJS.HmacSHA256( JSON.parse(JSON.parse(event.data).data).socket_id+":private-ECGfed", secretKey);
+      var hashInHex = CryptoJS.enc.Hex.stringify(hash);
+      // console.log(hashInHex);
+      socket.send("{\"event\": \"pusher:subscribe\", \"data\": {\"channel\": \"private-ECGfed\" ,\"auth\": \""+appKey+":"+hashInHex+"\"} }")
+    }else if(JSON.parse(event.data).data=="D1 connection established successfully") {
+      
+    
+    millitime=Date.now();
+    state=0
+    startState=0
+    wState=0
+    // console.log(millitime);
+   } else{
+    nextTime=Date.now();
+    // console.log(nextTime);
+
+
+
+    ADCString[wState]=JSON.parse(JSON.parse(event.data).data).x;
+    wState++;
+wState==maxState?(startState==1?null:(startState=1,stringToArray(ADCString[0],ADCArray1))):null;
+console.log(`${nextTime-millitime} ${ADCArray1.length}`)
+
+console.log(wState)
+millitime=nextTime
+    }
+    };
+    
+  
+setInterval(() => {
+  for (let index2 = 0; index2 <22; index2++) {
+
+    if (startState) {
+      
+
+index>=(c.width)-1?index=0:index++;
+
+if (arrayIndex>=ADCArray1.length-1) {
+  arrayIndex=0;
+  wState==0?startState=0:wState--;
+  for (let index = 0; index < ADCString.length-1; index++) {
+   ADCString[index] = ADCString[index+1];
+  }
+  ADCString.splice(ADCString.length-1);
+  stringToArray(ADCString[0],ADCArray1)
+
+  // console.log( ADCString[0])
+
+
+}else{arrayIndex++}
+
+
+
+ADCArrayDraw[index]=ADCArray1[arrayIndex]
+// console.log(arrayIndex)
+//  console.log( ADCArray)
+//  console.log( ADCArrayDraw)
+
+}
+    
+  }
+
+
+   
+
+
+},55/* ADCArray1.length/50 */);
+    
+    socket.onclose = function(event) {
+      if (event.wasClean) {
+        alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+      } else {
+        // e.g. server process killed or network down
+        // event.code is usually 1006 in this case
+        alert('[close] Connection died');
+      }
+    };
+    
+    socket.onerror = function(error) {
+      alert(`[error]`);
+    };
+    
+    // console.log( performance.now() )
+    // var hash = CryptoJS.HmacSHA256("Message", "secret");
+    //   var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+    //   document.write(hashInBase64);
+    
+    var speed=1;
+    // setInterval(Draw, 50);
+    function Draw() {
+
+      
+
+  
+      // console.log(arrayIndex)
+
+
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.beginPath();
+       for (var x = 0; x < ADCArrayDraw.length; x++) {
+         if ((x)==index+1) {
+           ctx.moveTo(x,ch-((ch/4095)*ADCArrayDraw[x]));
+        }else{
+           ctx.lineTo(x,ch-((ch/4095)*ADCArrayDraw[x])); 
+       }
+     }
+     
+     ctx.stroke();
+     // //  console.log(ADC[index]);
+     
+       requestId = window.requestAnimationFrame(Draw);
+     }
+     requestId = window.requestAnimationFrame(Draw);  
+     
+    
+      </script>
+</body>
