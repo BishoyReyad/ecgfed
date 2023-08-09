@@ -11,7 +11,8 @@
    padding: 0;
 }
 body, html {
-   height:100%;width:100%;
+   height:100%;
+   width:100%;
    overflow: hidden;
 }
 #canvas {
@@ -219,9 +220,9 @@ nT=Date.now()
           break;      
       }}
 
-     ctx.fillText(version, cw-(versionLen*2+80),30);
-     ctx.fillText(identityName, cw/2-(identityNameLen),ch-50);
-     ctx.fillText(identityFaculty, cw/2-(identityFacultyLen),ch-20);
+     ctx.fillText(version, cw-(versionLen*3),30);
+     ctx.fillText(identityName, cw/2-(identityNameLen*1.3),ch-54);
+     ctx.fillText(identityFaculty, cw/2-(identityFacultyLen*1.3),ch-20);
        requestId = window.requestAnimationFrame(Draw);
      }
      requestId = window.requestAnimationFrame(Draw);  
