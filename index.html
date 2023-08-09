@@ -133,7 +133,7 @@ body, html {
       nextTime=Date.now();
       ADCString[wState]=JSON.parse(JSON.parse(event.data).data).x; 
       wState==maxState?(startState==1?null:(startState=1,stringToArray(ADCString[0],ADCArray1))):null;
-      // console.log(`${nextTime-millitime} ${ADCArray1.length}`)
+      console.log(`${nextTime-millitime} ${ADCArray1.length}`)
       wState++;
       // console.log(wState)
       millitime=nextTime
@@ -146,7 +146,7 @@ setInterval(() => {
 
 
     if (startState) {
-        mT=Date.now();for (let index2 = 0; index2 <125; index2++) { 
+        mT=Date.now();for (let index2 = 0; index2 <40; index2++) { 
  
 index>=(c.width)-1?index=0:index++;
 
@@ -163,7 +163,7 @@ ADCArrayDraw[index]=ADCArray1[arrayIndex]
 nT=Date.now()
 }
   }
-},250);
+},59);
     
 // function disableScroll() {
 //     // Get the current page scroll position
@@ -220,7 +220,7 @@ nT=Date.now()
           break;      
       }}
 
-     ctx.fillText(version, cw-(versionLen*3),30);
+     ctx.fillText(version, cw-(versionLen*3+10),30);
      ctx.fillText(identityName, cw/2-(identityNameLen*1.4),ch-54);
      ctx.fillText(identityFaculty, cw/2-(identityFacultyLen*1.4),ch-20);
        requestId = window.requestAnimationFrame(Draw);
