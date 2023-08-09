@@ -207,19 +207,19 @@ nT=Date.now()
      ctx.font = "28px serif";
       switch (leadsState) {
         case 1:{
-          ctx.fillText(LNS1, 10,25);
+          ctx.fillText(LNS1, 10,30);
           break;
           }
           case 2:{
-          ctx.fillText(LNS2, 10,25);
+          ctx.fillText(LNS2, 10,30);
           break;
           }
           case 3:{
-          ctx.fillText(LNS12, 10,25);
+          ctx.fillText(LNS12, 10,30);
           break;      
       }}
 
-     ctx.fillText(version, cw-(versionLen*2+60),25);
+     ctx.fillText(version, cw-(versionLen*2+80),25);
      ctx.fillText(identityName, cw/2-(identityNameLen),ch-50);
      ctx.fillText(identityFaculty, cw/2-(identityFacultyLen),ch-20);
        requestId = window.requestAnimationFrame(Draw);
