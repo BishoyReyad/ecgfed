@@ -25,7 +25,7 @@ body, html {
   appearance: slider-vertical;
   position: absolute;
   top: 50%;
-  left: 100%;
+  left: 99.9%;
 /*   transform: translate(-50%, -50%); */
 
 }
@@ -44,6 +44,7 @@ body, html {
     c.width = window.innerWidth
     c.height = window.innerHeight
     var cw = c.width ;
+    cw=cw*(99*9/100)
     var ch = c.height ;
     var   cx = cw ,
     cy = ch ;
@@ -59,7 +60,7 @@ body, html {
       c.height = window.innerHeight
       cw = c.width;
       ch = c.height;
-      cw=cw*(99/100)
+      cw=cw*(99*9/100)
       cx = cw ,
       cy = ch ;
       w = cw;
