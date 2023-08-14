@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <head>
   <title>ECG Test</title>
-  <!-- <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script> -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
@@ -19,12 +18,19 @@ body, html {
    position:absolute;
    height:100%; width:100%;
 }
+.slider {
+  width: 300px;
+  appearance: slider-vertical;
+  position: absolute;
+  top: 50%;
+  left: 99%;
+  transform: translate(-50%, -50%);
 
+}
 </style>
- 
 </head>
 <body>
-  
+  <input type="range" min="0.1" max="1" value="1" step="0.1" class="slider" id="myRange">
   <canvas id="c"></canvas>
   <script>
     let appKey ="bea3cf75e9f8f18cc70a";
@@ -42,8 +48,6 @@ body, html {
     var rad = Math.PI / 180;
     var w =cw,
     h = ch;
-    //ctx.strokeStyle = "Cornsilk";
-    // ctx.lineWidth = 4;
     var ADC=[];
     var Adc;
     var index=0;
@@ -53,20 +57,22 @@ body, html {
       c.height = window.innerHeight
       cw = c.width;
       ch = c.height;
+      cw=cw*(99/100)
       cx = cw ,
       cy = ch ;
       w = cw;
       h = ch;
       });
+      
     socket.onopen = function(e) {
       console.log("[open] Connection established");
     
     };
-    const version="Alpha Version" 
+    const version="Alpha Version";
     const versionLen = Math.ceil(ctx.measureText(version).width); 
-    const identityName="Bishoy Reyad"
+    const identityName="Bishoy Reyad";
     const identityNameLen = Math.ceil(ctx.measureText(identityName).width);
-    const identityFaculty="Faculty of Medicine, Sohag University"
+    const identityFaculty="Faculty of Medicine, Sohag University";
     const identityFacultyLen = Math.ceil(ctx.measureText(identityFaculty).width);
 
 
@@ -104,11 +110,9 @@ body, html {
     
     socket.onmessage = function(event) {
       // console.log(`[message] Data received from server: ${event.data}`);
-      // console.log(JSON.parse(JSON.parse(event.data).data).socket_id)
       if(JSON.parse(event.data).event=="pusher:connection_established"){
       var hash = CryptoJS.HmacSHA256( JSON.parse(JSON.parse(event.data).data).socket_id+":private-ECGfed", secretKey);
       var hashInHex = CryptoJS.enc.Hex.stringify(hash);
-      // console.log(hashInHex);
       socket.send("{\"event\": \"pusher:subscribe\", \"data\": {\"channel\": \"private-ECGfed\" ,\"auth\": \""+appKey+":"+hashInHex+"\"} }")
     }else if(JSON.parse(event.data).data=="D1 connection established successfully") {
       millitime=Date.now();
@@ -146,24 +150,20 @@ setInterval(() => {
 
 
     if (startState) {
-        mT=Date.now();for (let index2 = 0; index2 <40; index2++) { 
- 
-index>=(c.width)-1?index=0:index++;
-
-if (arrayIndex>=ADCArray1.length-1) {
-  arrayIndex=0;
-  wState==1?startState=0:wState--;
-  for (let index = 0; index < ADCString.length-1; index++) {
-   ADCString[index] = ADCString[index+1];
-  }
-  ADCString.splice(ADCString.length-1);
-  stringToArray(ADCString[0],ADCArray1)
-}else{arrayIndex++}
-ADCArrayDraw[index]=ADCArray1[arrayIndex]
+      mT=Date.now();for (let index2 = 0; index2 <40; index2++) { 
+      index>=(c.width)-1?index=0:index++;
+      if (arrayIndex>=ADCArray1.length-1) {
+        arrayIndex=0;
+        wState==1?startState=0:wState--;
+          for (let index = 0; index < ADCString.length-1; index++) {
+          ADCString[index] = ADCString[index+1];
+          }
+        ADCString.splice(ADCString.length-1);
+        stringToArray(ADCString[0],ADCArray1)
+      }else{arrayIndex++}
+    ADCArrayDraw[index]=ADCArray1[arrayIndex]
 nT=Date.now()
-}
-  }
-},59);
+}}},59);
     
 // function disableScroll() {
 //     // Get the current page scroll position
@@ -180,8 +180,6 @@ nT=Date.now()
       if (event.wasClean) {
         alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
       } else {
-        // e.g. server process killed or network down
-        // event.code is usually 1006 in this case
         alert('[close] Connection died');
       }
     };
@@ -191,17 +189,24 @@ nT=Date.now()
     };
      
     var speed=1;
+    
+    var slider = document.getElementById("myRange");
+var output = document.getElementById("demo");
+var ecgWaveLen = slider.value;
+
+slider.oninput = function() {
+  ecgWaveLen = this.value;
+
+}
     function Draw() {
-
-
 
       ctx.clearRect(0, 0, cw, ch);
       ctx.beginPath();
        for (var x = 0; x < ADCArrayDraw.length; x++) {
          if ((x)==index+1) {
-           ctx.moveTo(x,ch-((ch/4095)*ADCArrayDraw[x]));
+           ctx.moveTo(x*ecgWaveLen,(ch-((ch/4095)*ADCArrayDraw[x]))*ecgWaveLen);
         }else{
-           ctx.lineTo(x,ch-((ch/4095)*ADCArrayDraw[x])); 
+           ctx.lineTo(x*ecgWaveLen,(ch-((ch/4095)*ADCArrayDraw[x]))*ecgWaveLen); 
        }
      }
      ctx.stroke();
@@ -216,7 +221,7 @@ nT=Date.now()
           break;
           }
           case 3:{
-          ctx.fillText(LNS12, 10,30);
+          ctx.fillText(LNS12,10,30);
           break;      
       }}
 
