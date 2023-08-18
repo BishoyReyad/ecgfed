@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <head>
   <title>ECG Test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
@@ -16,26 +15,14 @@ body, html {
    overflow: hidden;
 }
 #canvas {
-     margin: 0;
-   padding: 0;
    position:absolute;
    height:100%; width:100%;
 }
-.slider {
-  height: 300px;
-     margin: 0;
-   padding: 0;
-  appearance: slider-vertical;
-  position: absolute;
-  top: 50%;
-  left: 100%;
-/*   transform: translate(-50%, -50%); */
 
-}
 </style>
 </head>
 <body>
-  <input type="range" min="0.1" max="1" value="1" step="0.1" class="slider" id="myRange">
+  <!-- <input type="range" min="0.1" max="1" value="1" step="0.1" class="slider" id="myRange"> -->
   <canvas id="c"></canvas>
   <script>
     let appKey ="bea3cf75e9f8f18cc70a";
@@ -47,9 +34,8 @@ body, html {
     c.width = window.innerWidth
     c.height = window.innerHeight
     var cw = c.width ;
-    
     var ch = c.height ;
-    var   cx = cw ,
+    var cx = cw ,
     cy = ch ;
     var rad = Math.PI / 180;
     var w =cw,
@@ -63,7 +49,7 @@ body, html {
       c.height = window.innerHeight
       cw = c.width;
       ch = c.height;
-     
+      cw=cw
       cx = cw ,
       cy = ch ;
       w = cw;
@@ -71,7 +57,7 @@ body, html {
       });
       
     socket.onopen = function(e) {
-      console.log("[open] Connection established");
+      // console.log("[open] Connection established");
     
     };
     const version="Alpha Version";
@@ -143,7 +129,7 @@ body, html {
       nextTime=Date.now();
       ADCString[wState]=JSON.parse(JSON.parse(event.data).data).x; 
       wState==maxState?(startState==1?null:(startState=1,stringToArray(ADCString[0],ADCArray1))):null;
-      console.log(`${nextTime-millitime} ${ADCArray1.length}`)
+      // console.log(`${nextTime-millitime} ${ADCArray1.length}`)
       wState++;
       // console.log(wState)
       millitime=nextTime
@@ -196,23 +182,15 @@ nT=Date.now()
      
     var speed=1;
     
-    var slider = document.getElementById("myRange");
-var output = document.getElementById("demo");
-var ecgWaveLen = slider.value;
-
-slider.oninput = function() {
-  ecgWaveLen = this.value;
-
-}
     function Draw() {
 
       ctx.clearRect(0, 0, cw, ch);
       ctx.beginPath();
        for (var x = 0; x < ADCArrayDraw.length; x++) {
          if ((x)==index+1) {
-           ctx.moveTo(x*ecgWaveLen,(ch-((ch/4095)*ADCArrayDraw[x]))*ecgWaveLen);
+           ctx.moveTo(x,(ch-((ch/4095)*ADCArrayDraw[x])));
         }else{
-           ctx.lineTo(x*ecgWaveLen,(ch-((ch/4095)*ADCArrayDraw[x]))*ecgWaveLen); 
+           ctx.lineTo(x,(ch-((ch/4095)*ADCArrayDraw[x]))); 
        }
      }
      ctx.stroke();
