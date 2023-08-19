@@ -19,16 +19,17 @@ window.addEventListener(
     // number of touch points.
     switch (e.touches.length) {
       case 1:
-      var x = event.touches[0].clientX;
-  var y = event.touches[0].clientY;
-  document.getElementById("demo").innerHTML = x + ", " + y;
+  //     var x = event.touches[0].clientX;
+  // var y = event.touches[0].clientY;
+  // document.getElementById("demo").innerHTML = x + ", " + y;
         break;
       case 2:
-      var x1 = Math.ceil(event.touches[0].clientX);
-  var y1= Math.ceil(event.touches[0].clientY);
+  var x1 = Math.ceil(event.touches[0].clientX);
+  var y1=  Math.ceil(event.touches[0].clientY);
   var x2 = Math.ceil(event.touches[1].clientX);
   var y2 = Math.ceil(event.touches[1].clientY);
   document.getElementById("demo").innerHTML = x1 + ", " + y1 + ", " + x2 + ", " + y2;
+  document.getElementById("demo").innerHTML =Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2));
   // document.getElementById("demo").innerHTML = x + ", " + y;
         break;
       case 3:
