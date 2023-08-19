@@ -2,20 +2,42 @@
 <html>
 <body>
 
-<h1>DOM touchmove Event</h1>
+<!-- <h1>DOM touchmove Event</h1> -->
 
 <p ontouchmove="myFunction(event)">Touch this paragraph, and move the finger to trigger a function that will display the x and y coordinates of the touch, according the the document:</p>
 
 <p><strong>Note:</strong> This example is for touch devices only.</p>
 
 <p id="demo"></p>
-
+<p id="demo1"></p>
 <script>
 function myFunction(event) {
   var x = event.touches[0].clientX;
   var y = event.touches[0].clientY;
   document.getElementById("demo").innerHTML = x + ", " + y;
 }
+someElement.addEventListener(
+  "touchstart",
+  (e) => {
+    // Invoke the appropriate handler depending on the
+    // number of touch points.
+    switch (e.touches.length) {
+      case 1:
+      document.getElementById("demo").innerHTML = 11;
+        break;
+      case 2:
+      document.getElementById("demo").innerHTML = 22;
+        break;
+      case 3:
+      document.getElementById("demo").innerHTML = 33;
+        break;
+      default:
+        console.log("Not supported");
+        break;
+    }
+  },
+  false,
+);
 </script>
 
 </body>
