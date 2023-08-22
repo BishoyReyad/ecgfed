@@ -1,65 +1,257 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta content="user-scalable=no>
-    <style>
+<head>
+  <title>ECG Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
+<style>
       * {
    margin: 0;
    padding: 0;
 }
 body, html {
+   touch-action: pan-x pan-y ;
    height:100%;
    width:100%;
    overflow: hidden;
    position:absolute;
-   
 }
-/* #canvas {
-
+#canvas {
    height:100%; width:100%;
-} */
+}
 
 </style>
-  </head>
+</head>
 <body>
+  <canvas id="c"></canvas>
+  <script>
+    let appKey ="bea3cf75e9f8f18cc70a";
+    let secretKey ="6e94b23f65859b39498d";
+    let socket = new WebSocket("wss://ws-eu.pusher.com/app/"+appKey+"?client=js&version=2.1&protocol=7 HTTP/1.1");
+    var c = document.getElementById("c");
+    var ctx = c.getContext("2d");
+    c.width = window.innerWidth
+    c.height = window.innerHeight
+    var cw = c.width ;
+    var ch = c.height ;
+    var cx = cw ,
+    cy = ch ;
+    var rad = Math.PI / 180;
+    var w =cw,
+    h = ch;
+    var ADC=[];
+    var Adc;
+    var index=0;
+    var zoomVal=.5,zoomLen=0,previousZoomLen=0,zoomMin=.1,zoomMax=1;
+    window.addEventListener("resize", function() {
+      c.width = window.innerWidth
+      c.height = window.innerHeight
+      cw = c.width;
+      ch = c.height;
+      cw=cw
+      cx = cw ,
+      cy = ch ;
+      w = cw;
+      h = ch;
+      });
+      
+    socket.onopen = function(e) {
+      console.log("[open] Connection established");
+    
+    };
+    const version="Alpha Version";
+    const versionLen = Math.ceil(ctx.measureText(version).width); 
+    const identityName="Bishoy Reyad";
+    const identityNameLen = Math.ceil(ctx.measureText(identityName).width);
+    const identityFaculty="Faculty of Medicine, Sohag University";
+    const identityFacultyLen = Math.ceil(ctx.measureText(identityFaculty).width);
 
+    const LNS1=  "Lead 1 is not connected" 
+    const LNS1Len  = Math.ceil(ctx.measureText(LNS1).width); 
+    const LNS2=  "Lead 2 is not connected"
+    const LNS2Len  = Math.ceil(ctx.measureText(LNS2).width); 
+    const LNS12= "Leads 1,2 are not connected" 
+    const LNS12Len = Math.ceil(ctx.measureText(LNS12).width);
 
-
-<p id="demo"></p>
-<p id="demo1"></p>
-<script>
+    var ADCArray1=[];
+    var stringIndex=0 ;var ADCArrayDraw=[];
+    var arrayIndex=0;
+    var ADCString=[];
+    var millitime=0;
+    var nextTime=0;
+    var startState=0,maxState=3,wState=0;
+    var leadsState=0;
+    function stringToArray(string,array){
+      var ADCArray=[];
+      ADCArray = string.split(" ");
+      ADCArray[ADCArray.length-1]!=""?null:ADCArray.splice(ADCArray.length-1);
+      for (let index1 = 0; index1 < ADCArray.length; index1++) {
+        array[index1]=parseInt(ADCArray[index1]);
+  
+      }
+      if (array.length>ADCArray.length) {
+      for (let index = array.length-1; index >= 0; index--) {
+        if (array.length>ADCArray.length) {
+          array.splice(array.length-1);
+        }else{
+          break;
+        }
+      }}
+    }
 
 window.addEventListener(
   "touchmove",
   (e) => {
-    // Invoke the appropriate handler depending on the
-    // number of touch points.
     switch (e.touches.length) {
-      case 1:
-  //     var x = event.touches[0].clientX;
-  // var y = event.touches[0].clientY;
-  // document.getElementById("demo").innerHTML = x + ", " + y;
-        break;
       case 2:
-  var x1 = Math.ceil(event.touches[0].clientX);
-  var y1=  Math.ceil(event.touches[0].clientY);
-  var x2 = Math.ceil(event.touches[1].clientX);
-  var y2 = Math.ceil(event.touches[1].clientY);
-  document.getElementById("demo").innerHTML = x1 + ", " + y1 + ", " + x2 + ", " + y2;
-  document.getElementById("demo1").innerHTML =Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2));
-  // document.getElementById("demo").innerHTML = x + ", " + y;
-        break;
-      case 3:
-      document.getElementById("demo1").innerHTML = 33;
+      var x1 = Math.ceil(event.touches[0].clientX);
+      var y1=  Math.ceil(event.touches[0].clientY);
+      var x2 = Math.ceil(event.touches[1].clientX);
+      var y2 = Math.ceil(event.touches[1].clientY);
+      zoomLen=Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2));
+      if (((zoomLen-previousZoomLen)>0 || (zoomLen-previousZoomLen)<0) && (zoomLen-previousZoomLen)!=zoomLen) {
+         if (((zoomLen-previousZoomLen)>0 && zoomVal<zoomMax) ||
+             ((zoomLen-previousZoomLen)<0 && zoomVal>zoomMin)) {
+               zoomVal+=Math.ceil(zoomLen-previousZoomLen)/1000;
+               zoomVal>zoomMax?zoomVal=zoomMax:null;
+               zoomVal<zoomMin?zoomVal=zoomMin:null;
+         }
+      }
+      previousZoomLen=zoomLen;
         break;
       default:
-      document.getElementById("demo1").innerHTML = 44;
+      console.log("There is a problem in zooming");
         break;
     }
   },
   false,
 );
-</script>
+window.addEventListener("touchend",
+  (e) => {
+   previousZoomLen=0;
+  },false,
+);
+    socket.onmessage = function(event) {
+      // console.log(`[message] Data received from server: ${event.data}`);
+      if(JSON.parse(event.data).event=="pusher:connection_established"){
+      var hash = CryptoJS.HmacSHA256(JSON.parse(JSON.parse(event.data).data).socket_id+":private-ECGfed", secretKey);
+      var hashInHex = CryptoJS.enc.Hex.stringify(hash);
+      socket.send("{\"event\": \"pusher:subscribe\", \"data\": {\"channel\": \"private-ECGfed\" ,\"auth\": \""+appKey+":"+hashInHex+"\"} }")
+    }else if(JSON.parse(event.data).data=="D1 connection established successfully") {
+      millitime=Date.now();
+      state=0
+      startState=0
+      wState=0
+      leadsState=0;
+    }else if(JSON.parse(JSON.parse(event.data).data).x=="LSN:1") {
+      leadsState=1;
+      startState=0
+      wState=0
+    }else if(JSON.parse(JSON.parse(event.data).data).x=="LSN:2") {
+      leadsState=2;
+      startState=0
+      wState=0
+    }else if(JSON.parse(JSON.parse(event.data).data).x=="LSN:1,2") {
+      leadsState=3;
+      startState=0
+      wState=0
+    }else{
+      leadsState=0;
+      nextTime=Date.now();
+      ADCString[wState]=JSON.parse(JSON.parse(event.data).data).x; 
+      wState==maxState?(startState==1?null:(startState=1,stringToArray(ADCString[0],ADCArray1))):null;
+      console.log(`${nextTime-millitime} ${ADCArray1.length}`)
+      wState++;
+      // console.log(wState)
+      millitime=nextTime
+    }
+    };
+    
+  var mT=0,nT=0
+  
+setInterval(() => {
+    if (startState) {
+      mT=Date.now();for (let index2 = 0; index2 <40; index2++) { 
+      index>=(c.width/zoomVal)-1?index=0:index++;
+      if (arrayIndex>=ADCArray1.length-1) {
+        arrayIndex=0;
+        wState==1?startState=0:wState--;
+          for (let index = 0; index < ADCString.length-1; index++) {
+          ADCString[index] = ADCString[index+1];
+          }
+        ADCString.splice(ADCString.length-1);
+        stringToArray(ADCString[0],ADCArray1)
+      }else{arrayIndex++}
+    ADCArrayDraw[index]=ADCArray1[arrayIndex]
+nT=Date.now()
+}
+if (ADCArrayDraw.length>(c.width/zoomVal)) {
+  for (let index2 = (c.width/zoomVal)-1; index2 < ADCArrayDraw.length-1; index2++) {
+    ADCArrayDraw.splice(index2);
+    
+  }
+}}},59);
+    
+// function disableScroll() {
+//     // Get the current page scroll position
+//     scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+//     scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
 
+//         // if any scroll is attempted, set this to the previous value
+//         window.onscroll = function() {
+//             window.scrollTo(scrollLeft, scrollTop);
+//         };
+// }
+
+    socket.onclose = function(event) {
+      if (event.wasClean) {
+        alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+      } else {
+        alert('[close] Connection died');
+      }
+    };
+    
+    socket.onerror = function(error) {
+      alert(`[error]`);
+    };
+     
+    var speed=1;
+    
+    function Draw() {
+
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.beginPath();
+       for (var x = 0; x < (c.width/zoomVal); x++) {
+         if ((x)==index+1) {
+           ctx.moveTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+        }else{
+           ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+       }
+     }
+     ctx.stroke();
+     ctx.font = "30px serif";
+      switch (leadsState) {
+        case 1:{
+          ctx.fillText(LNS1, 10,30);
+          break;
+          }
+          case 2:{
+          ctx.fillText(LNS2, 10,30);
+          break;
+          }
+          case 3:{
+          ctx.fillText(LNS12,10,30);
+          break;      
+      }}
+
+     ctx.fillText(version, cw-(versionLen*3+20),30);
+     ctx.fillText(identityName, cw/2-(identityNameLen*1.4),ch-54);
+     ctx.fillText(identityFaculty, cw/2-(identityFacultyLen*1.4),ch-20);
+       requestId = window.requestAnimationFrame(Draw);
+     }
+     requestId = window.requestAnimationFrame(Draw);  
+     
+    
+      </script>
 </body>
 </html>
