@@ -41,7 +41,7 @@ body, html {
     h = ch;
     var ADC=[];
     var Adc;
-    var index=0;
+    var  index=0;
     var zoomVal=.5,zoomLen=0,previousZoomLen=0,zoomMin=.1,zoomMax=1;
     window.addEventListener("resize", function() {
       c.width = window.innerWidth
@@ -56,7 +56,7 @@ body, html {
       });
       
     socket.onopen = function(e) {
-      console.log("[open] Connection established");
+      // console.log("[open] Connection established");
     
     };
     const version="Alpha Version";
@@ -120,7 +120,7 @@ window.addEventListener(
       previousZoomLen=zoomLen;
         break;
       default:
-      console.log("There is a problem in zooming");
+      // console.log("There is a problem in zooming");
         break;
     }
   },
@@ -159,10 +159,11 @@ window.addEventListener("touchend",
       leadsState=0;
       nextTime=Date.now();
       ADCString[wState]=JSON.parse(JSON.parse(event.data).data).x; 
+      // console.log(ADCString[wState]);
       wState==maxState?(startState==1?null:(startState=1,stringToArray(ADCString[0],ADCArray1))):null;
-      console.log(`${nextTime-millitime} ${ADCArray1.length}`)
+      // console.log(`${nextTime-millitime} ${ADCArray1.length}`)
       wState++;
-      // console.log(wState)
+      // console.log(wState) 
       millitime=nextTime
     }
     };
@@ -170,26 +171,34 @@ window.addEventListener("touchend",
   var mT=0,nT=0
   
 setInterval(() => {
-    if (startState) {
-      mT=Date.now();for (let index2 = 0; index2 <40; index2++) { 
-      index>=(c.width/zoomVal)-1?index=0:index++;
+  if (startState) {
+    mT=Date.now();
+    for (let index2 = 0; index2 <40; index2++) { 
+    index>=(c.width/zoomVal)-1?index=0:index++;
       if (arrayIndex>=ADCArray1.length-1) {
         arrayIndex=0;
-        wState==1?startState=0:wState--;
-          for (let index = 0; index < ADCString.length-1; index++) {
+        if (wState<=1) {
+          startState=0;
+          break;
+        }else{
+          wState--;
+        }
+        // console.log(wState) 
+        for (let index = 0; index < ADCString.length-1; index++) {
           ADCString[index] = ADCString[index+1];
-          }
+        }
         ADCString.splice(ADCString.length-1);
+        // console.log(ADCString[0]);
         stringToArray(ADCString[0],ADCArray1)
       }else{arrayIndex++}
     ADCArrayDraw[index]=ADCArray1[arrayIndex]
-nT=Date.now()
-}
-if (ADCArrayDraw.length>(c.width/zoomVal)) {
-  for (let index2 = (c.width/zoomVal)-1; index2 < ADCArrayDraw.length-1; index2++) {
-    ADCArrayDraw.splice(index2);
-    
-  }
+    nT=Date.now()
+    }
+  if (ADCArrayDraw.length>(c.width/zoomVal)) {
+    for (let index2 = (c.width/zoomVal)-1; index2 < ADCArrayDraw.length-1; index2++) {
+      ADCArrayDraw.splice(index2);
+      
+    }
 }}},59);
     
 // function disableScroll() {
@@ -221,13 +230,13 @@ if (ADCArrayDraw.length>(c.width/zoomVal)) {
 
       ctx.clearRect(0, 0, cw, ch);
       ctx.beginPath();
-       for (var x = 0; x < (c.width/zoomVal); x++) {
+       for (var x = 0; x < (c.width/zoomVal); x++) { 
          if ((x)==index+1) {
            ctx.moveTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
         }else{
            ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-       }
-     }
+       }}
+     
      ctx.stroke();
      ctx.font = "30px serif";
       switch (leadsState) {
