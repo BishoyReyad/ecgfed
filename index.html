@@ -177,26 +177,41 @@ window.addEventListener("touchend",
     };
   var minValDiff=[0,0],maxValDiff=[0,0];
   var ecgPeak=[0,0];
+  var ecgPeaks=[[1,0],[0,0]];
+  var previousEcgPeak=0;
+  var ecgLowPeak=[[0,0],[0,0]]
+  var maxMinInterval=150;
+  var firstLowPeak=0;
+  var QSInterval=30;
+  var diffLenVal=1000;
   var mT=0,nT=0
   var diff1ValArr=[];
   var valChecker=0, valCheckerCounte=0;
   var pulseCounter=0;
   var pulse=[0,0]
   var pulseDelay=1000;
+  var heartBeatRate=0;
   var delayErr=0;
 setInterval(() => {
   if (startState) {
     mT=Date.now();
     for (let index2 = 0; index2 <40; index2++) { 
-    index>=(c.width/zoomVal)?(index=0):index++;
+    // index>=(c.width/zoomVal)?(index=0):index++;
+    if (index>=(c.width/zoomVal)) {
+      index=0;
+      for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
+      ecgPeaks.splice(index2);
+      } 
+      ecgPeaks[0][0]=1
+    }else{
+      index++;
+    }
       if (arrayIndex>=ADCArray1.length) {
         arrayIndex=0;
         if (wState<=1) {
           startState=0;
           break;
-        }else{
-          wState--;
-        }
+        }else{ wState--;}
         // console.log(wState) 
         for (let index = 0; index < ADCString.length-1; index++) {
           ADCString[index] = ADCString[index+1];
@@ -210,35 +225,64 @@ setInterval(() => {
     ADCArrayDraw[index]>ecgPeak[0]?(ecgPeak[0]=ADCArrayDraw[index],ecgPeak[1]=index):null;
     diff1ValArr[index]>maxValDiff[0]?(maxValDiff[0]=diff1ValArr[index],maxValDiff[1]=index):null;
     diff1ValArr[index]<minValDiff[0]?(minValDiff[0]=diff1ValArr[index],minValDiff[1]=index):null;
-
-
-if (ecgPeak[1]>=maxValDiff[1] && ecgPeak[1]<=minValDiff[1] &&(minValDiff[1]-maxValDiff[1]<25)) {
-if (valCheckerCounte<4) {
-  valCheckerCounte++;
-}else{
-  console.log(" ")
-  pulseCounter++;
-  pulse[1]=pulse[0];
-  pulse[0]=ecgPeak[1];
-  pulseDelay=pulse[0]-pulse[1];
-  pulseDelay<0?pulseDelay=((c.width/zoomVal)-pulse[1])+pulse[0]:null
-  pulseDelay=Math.ceil((1/(pulseDelay/666.666666))*60)
-  console.log(pulseDelay)
-  ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-  ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-  delayErr=0;
-  valCheckerCounte=0
-}
-}else{
-  delayErr++
-if (delayErr>2000) {
-  ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-  ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-  delayErr=0
-}}
+    if (ecgPeak[1]>=maxValDiff[1] && ecgPeak[1]<=minValDiff[1] &&((minValDiff[1]-maxValDiff[1])<maxMinInterval+30)) {
+      ecgPeak[0]>previousEcgPeak?valCheckerCounte=0:null;
+      previousEcgPeak=ecgPeak[0];
+      diff1ValArr[index]<0 && ADCArrayDraw[index]<ADCArrayDraw[minValDiff[1]] ?
+      (ecgLowPeak.splice((ecgPeaks[0][0]),0,[ADCArrayDraw[index],index]),valCheckerCounte=0):null;
+        if (valCheckerCounte<6) {
+          valCheckerCounte++;
+        }else{
+          if(((ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])+(maxValDiff[0]-minValDiff[0]))>100 &&
+             (ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])>=diffLenVal/2) {
+            var firstLowPeakIndex=ecgPeak[1];
+            firstLowPeak=ecgPeak[0];
+            while (diff1ValArr[firstLowPeakIndex]>0) {
+              if(ADCArrayDraw[firstLowPeakIndex]>=firstLowPeak){
+                break;
+              }
+              firstLowPeak=ADCArrayDraw[firstLowPeakIndex];
+              firstLowPeakIndex==0?firstLowPeakIndex=(c.width/zoomVal):firstLowPeakIndex--; 
+            }
+            firstLowPeakIndex=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<0?(c.width/zoomVal)-firstLowPeakIndex:firstLowPeakIndex);
+            if(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<=35) {
+              console.log(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)
+              diffLenVal=(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])
+              maxMinInterval=(minValDiff[1]-maxValDiff[1])
+              // console.log(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])]);
+              // console.log(maxValDiff[0]-minValDiff[0]);
+              console.log(" ")
+              pulseCounter++;
+              pulse[1]=pulse[0];
+              pulse[0]=ecgPeak[1];
+              ecgPeaks.splice((ecgPeaks[0][0]++),0,[ecgPeak[0],ecgPeak[1]])
+              // console.log(ecgPeaks[ecgPeaks[0][0]-1])
+              // console.log(ecgLowPeak[ecgPeaks[0][0]-1])
+              pulseDelay=pulse[0]-pulse[1];
+              pulseDelay<0?pulseDelay=((c.width/zoomVal)-pulse[1])+pulse[0]:null
+              heartBeatRate=Math.ceil((1/(pulseDelay/666.666666))*60)
+              // console.log(heartBeatRate)
+              ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
+              ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
+              delayErr=0;
+              valCheckerCounte=0
+            }else{
+              ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
+              ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
+      }}
+       }
+    }else{
+      delayErr++
+      if ((delayErr>2000&&ecgPeak[0]>=previousEcgPeak)||(maxValDiff[0]-minValDiff[0])>1000) {
+        console.log(`${maxValDiff[0]} ${minValDiff[0]}`)
+        ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
+        ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
+        delayErr=0
+      }
+    }
   
     nT=Date.now()
-    }
+  }
   if (ADCArrayDraw.length>(c.width/zoomVal)) {
     for (let index2 = (c.width/zoomVal)-1; index2 < ADCArrayDraw.length-1; index2++) {
       ADCArrayDraw.splice(index2);
@@ -286,58 +330,75 @@ if (delayErr>2000) {
        }}
      ctx.strokeStyle = 'blue'
      ctx.stroke();
-    //   ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1) {
-    //        ctx.moveTo(x*zoomVal,(ch-((ch/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'blue'
-    //  ctx.stroke();
+      ctx.beginPath();
+       for (var x = 0; x < (c.width/zoomVal); x++) { 
+         if ((x)==index+1) {
+           ctx.moveTo(x*zoomVal,(ch-((ch/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+        }else{
+           ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+       }}
+     ctx.strokeStyle = 'blue'
+     ctx.stroke();
      
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1||diff1ValArr[x]>=0) {
-    //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'red'
-    //  ctx.stroke();
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1) {
-    //        ctx.moveTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'red'
-    //  ctx.stroke();
+     ctx.beginPath();
+       for (var x = 0; x < (c.width/zoomVal); x++) { 
+         if ((x)==index+1||diff1ValArr[x]>=0) {
+           ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+        }else{
+           ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+       }}
+     ctx.strokeStyle = 'red'
+     ctx.stroke();
+     ctx.beginPath();
+       for (var x = 0; x < (c.width/zoomVal); x++) { 
+         if ((x)==index+1) {
+           ctx.moveTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+        }else{
+           ctx.lineTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+       }}
+     ctx.strokeStyle = 'red'
+     ctx.stroke();
 
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1||diff1ValArr[x]<=0) {
-    //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'green'
-    //  ctx.stroke();
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1) {
-    //        ctx.moveTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'green'
-    //  ctx.stroke();
+     ctx.beginPath();
+       for (var x = 0; x < (c.width/zoomVal); x++) { 
+         if ((x)==index+1||diff1ValArr[x]<=0) {
+           ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+        }else{
+           ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+       }}
+     ctx.strokeStyle = 'green'
+     ctx.stroke();
+     ctx.beginPath();
+       for (var x = 0; x < (c.width/zoomVal); x++) { 
+         if ((x)==index+1) {
+           ctx.moveTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+        }else{
+           ctx.lineTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+       }}
+     ctx.strokeStyle = 'green'
+     ctx.stroke();
 
+ctx.lineWidth = 3;
+for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
+  // console.log(ecgLowPeak[1][0])
+  ctx.beginPath();
+  for (let index1 = 0; index1 < c.height; index1++) {
+    if (index1>(ch-((ch/4095)*ecgPeaks[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))&&index1<(ch-((ch/4095)*ecgLowPeak[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))) {
+      
+    ctx.lineTo(ecgPeaks[index2][1]*zoomVal,index1);
+    }else{
+      ctx.moveTo(ecgPeaks[index2][1]*zoomVal,index1);
+    }
+  }
+  ctx.strokeStyle = 'black'
+     ctx.stroke();
+}
+ctx.lineWidth = 1;
      ctx.font = "50px serif";
       switch (leadsState) {
         case 0:{
-          ctx.fillText(pulseDelay, 10,50);
+          ctx.fillText(`Heart rate:        ${heartBeatRate}`, 10,50);
+          ctx.fillText(`Counted beats: ${pulseCounter}`, 10,100);
           break;
           }
         case 1:{
