@@ -221,10 +221,13 @@ setInterval(() => {
         stringToArray(ADCString[0],ADCArray1)
       }else{arrayIndex++}
     ADCArrayDraw[index]=ADCArray1[arrayIndex]
-    diff1ValArr[index]= (index==0?null:(ADCArrayDraw[index]-ADCArrayDraw[index-1])) 
+    diff1ValArr[index]= (index==0?(ADCArrayDraw[0]-ADCArrayDraw[ADCArrayDraw.length-1]):(ADCArrayDraw[index]-ADCArrayDraw[index-1])) 
     ADCArrayDraw[index]>ecgPeak[0]?(ecgPeak[0]=ADCArrayDraw[index],ecgPeak[1]=index):null;
     diff1ValArr[index]>maxValDiff[0]?(maxValDiff[0]=diff1ValArr[index],maxValDiff[1]=index):null;
     diff1ValArr[index]<minValDiff[0]?(minValDiff[0]=diff1ValArr[index],minValDiff[1]=index):null;
+    minValDiff[1]-maxValDiff[1]<0&&ecgPeak>0?(maxValDiff[1]=ADCArrayDraw.length-1-maxValDiff[1],
+    minValDiff[1]=minValDiff[1]+maxValDiff[1]):null
+    
     if (ecgPeak[1]>=maxValDiff[1] && ecgPeak[1]<=minValDiff[1] &&((minValDiff[1]-maxValDiff[1])<maxMinInterval+30)) {
       ecgPeak[0]>previousEcgPeak?valCheckerCounte=0:null;
       previousEcgPeak=ecgPeak[0];
@@ -246,7 +249,8 @@ setInterval(() => {
             }
             firstLowPeakIndex=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<0?(c.width/zoomVal)-firstLowPeakIndex:firstLowPeakIndex);
             if(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<=35) {
-              console.log(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)
+              console.log(`${QSInterval} ${QSInterval*1.5}`)
+              QSInterval=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)>0?(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex):QSInterval;
               diffLenVal=(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])
               maxMinInterval=(minValDiff[1]-maxValDiff[1])
               // console.log(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])]);
