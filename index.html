@@ -193,6 +193,7 @@ window.addEventListener("touchend",
   var heartBeatRate=0;
   var delayErr=0;
 setInterval(() => {
+
   if (startState) {
     mT=Date.now();
     for (let index2 = 0; index2 <40; index2++) { 
@@ -225,10 +226,10 @@ setInterval(() => {
     ADCArrayDraw[index]>ecgPeak[0]?(ecgPeak[0]=ADCArrayDraw[index],ecgPeak[1]=index):null;
     diff1ValArr[index]>maxValDiff[0]?(maxValDiff[0]=diff1ValArr[index],maxValDiff[1]=index):null;
     diff1ValArr[index]<minValDiff[0]?(minValDiff[0]=diff1ValArr[index],minValDiff[1]=index):null;
-    minValDiff[1]-maxValDiff[1]<0&&ecgPeak>0?(maxValDiff[1]=ADCArrayDraw.length-1-maxValDiff[1],
+    minValDiff[1]-maxValDiff[1]<0 && ecgPeak>0?(maxValDiff[1]=ADCArrayDraw.length-1-maxValDiff[1],
     minValDiff[1]=minValDiff[1]+maxValDiff[1]):null
     
-    if (ecgPeak[1]>=maxValDiff[1] && ecgPeak[1]<=minValDiff[1] &&((minValDiff[1]-maxValDiff[1])<maxMinInterval+30)) {
+    if (ecgPeak[1]>=maxValDiff[1] && ecgPeak[1]<=minValDiff[1] &&((minValDiff[1]-maxValDiff[1])<maxMinInterval+40)) {
       ecgPeak[0]>previousEcgPeak?valCheckerCounte=0:null;
       previousEcgPeak=ecgPeak[0];
       diff1ValArr[index]<0 && ADCArrayDraw[index]<ADCArrayDraw[minValDiff[1]] ?
@@ -248,7 +249,7 @@ setInterval(() => {
               firstLowPeakIndex==0?firstLowPeakIndex=(c.width/zoomVal):firstLowPeakIndex--; 
             }
             firstLowPeakIndex=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<0?(c.width/zoomVal)-firstLowPeakIndex:firstLowPeakIndex);
-            if(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<=35) {
+            if(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<=40) {
               console.log(`${QSInterval} ${QSInterval*1.5}`)
               QSInterval=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)>0?(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex):QSInterval;
               diffLenVal=(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])
@@ -273,6 +274,7 @@ setInterval(() => {
             }else{
               ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
               ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
+              delayErr=0;
       }}
        }
     }else{
@@ -325,6 +327,10 @@ setInterval(() => {
     function Draw() {
 
       ctx.clearRect(0, 0, cw, ch);
+      ctx.rect(0, 0, cw, ch);
+      ctx.fillStyle = "#060606"
+      ctx.fill();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.6)"
       ctx.beginPath();
        for (var x = 0; x < (c.width/zoomVal); x++) { 
          if ((x)==index+1) {
@@ -332,7 +338,7 @@ setInterval(() => {
         }else{
            ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
        }}
-     ctx.strokeStyle = 'blue'
+     ctx.strokeStyle = '#EDEDED'
      ctx.stroke();
       ctx.beginPath();
        for (var x = 0; x < (c.width/zoomVal); x++) { 
@@ -341,7 +347,7 @@ setInterval(() => {
         }else{
            ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
        }}
-     ctx.strokeStyle = 'blue'
+       ctx.strokeStyle = '#D4D4D4'
      ctx.stroke();
      
      ctx.beginPath();
@@ -394,11 +400,13 @@ for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
       ctx.moveTo(ecgPeaks[index2][1]*zoomVal,index1);
     }
   }
-  ctx.strokeStyle = 'black'
+  ctx.strokeStyle = '#2781C2DD'
      ctx.stroke();
 }
 ctx.lineWidth = 1;
-     ctx.font = "50px serif";
+     ctx.font = "48px serif";
+     
+     ctx.fillStyle = "#afafaf"
       switch (leadsState) {
         case 0:{
           ctx.fillText(`Heart rate:        ${heartBeatRate}`, 10,50);
