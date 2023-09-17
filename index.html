@@ -188,9 +188,10 @@ window.addEventListener("touchend",
   var diff1ValArr=[];
   var valChecker=0, valCheckerCounte=0;
   var pulseCounter=0;
-  var pulse=[0,0]
+  var pulse=[0,0];
   var pulseDelay=1000;
   var heartBeatRate=0;
+  var heartReatMean=0;
   var delayErr=0;
 setInterval(() => {
 
@@ -248,12 +249,16 @@ setInterval(() => {
               firstLowPeak=ADCArrayDraw[firstLowPeakIndex];
               firstLowPeakIndex==0?firstLowPeakIndex=(c.width/zoomVal):firstLowPeakIndex--; 
             }
-            firstLowPeakIndex=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<0?(c.width/zoomVal)-firstLowPeakIndex:firstLowPeakIndex);
-            if(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<=40) {
+            ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<0?
+            (firstLowPeakIndex=(c.width/zoomVal)-firstLowPeakIndex,
+            ecgLowPeak[(ecgPeaks[0][0])][1] = ecgLowPeak[(ecgPeaks[0][0])][1]+firstLowPeakIndex):null;
+
+            if((ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)<=40) {
               console.log(`${QSInterval} ${QSInterval*1.5}`)
               QSInterval=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)>0?(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex):QSInterval;
               diffLenVal=(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])
               maxMinInterval=(minValDiff[1]-maxValDiff[1])
+
               // console.log(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])]);
               // console.log(maxValDiff[0]-minValDiff[0]);
               console.log(" ")
