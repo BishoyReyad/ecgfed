@@ -381,9 +381,9 @@ setInterval(() => {
       ctx.beginPath();
        for (var x = 0; x < (c.width/zoomVal); x++) { 
          if ((x)==index+1) {
-           ctx.moveTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+           ctx.moveTo(x*zoomVal,(ch-100-((27*(40/1.5)/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
         }else{
-           ctx.lineTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+           ctx.lineTo(x*zoomVal,(ch-100-((27*(40/1.5)/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
        }}
      ctx.strokeStyle = '#FEFEFE'
      ctx.stroke();
