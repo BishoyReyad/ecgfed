@@ -346,7 +346,7 @@ setInterval(() => {
       ctx.fill();
       //ECG Grid 
       var gridCounter=0;
-      for (var x = 40/timeToCount; x < (c.width/zoomVal); x+=40/timeToCount){
+      for (var x = 40/timeToCount; x < (c.width/zoomVal); x+=(40/timeToCount)*zoomVal){
         if(gridCounter==5){
           ctx.lineWidth = 2;
           gridCounter=0;
@@ -361,7 +361,7 @@ setInterval(() => {
         ctx.stroke();
         
       }
-      for (var x = (40/timeToCount)*4; x < (c.height/zoomVal)/2.25; x+=40/timeToCount){
+      for (var x = (40/timeToCount)*4; x < (c.height/zoomVal)/2.25; x+=(40/timeToCount)*zoomVal){
         if(gridCounter==5){
           ctx.lineWidth = 2;
           gridCounter=0;
