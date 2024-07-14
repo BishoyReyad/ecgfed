@@ -346,7 +346,7 @@ setInterval(() => {
       ctx.fill();
       //ECG Grid 
       var gridCounter=0;
-      for (var x = 40/timeToCount; x < (c.width/zoomVal); x+=(40/timeToCount)*zoomVal){
+      for (var x = 40/timeToCount; x < (c.width/zoomVal); x+=(40/timeToCount)*(zoomVal/.5)){
         if(gridCounter==5){
           ctx.lineWidth = 2;
           gridCounter=0;
@@ -361,7 +361,7 @@ setInterval(() => {
         ctx.stroke();
         
       }
-      for (var x = (40/timeToCount)*4; x < (c.height/zoomVal)/2.25; x+=(40/timeToCount)*zoomVal){
+      for (var x = (40/timeToCount)*4; x < ((c.height)/zoomVal); x+=(40/timeToCount)*(zoomVal/.5)){
         if(gridCounter==5){
           ctx.lineWidth = 2;
           gridCounter=0;
@@ -399,68 +399,68 @@ setInterval(() => {
     //  ctx.strokeStyle = '#EEEEEE'
     //  ctx.stroke();
       ctx.beginPath();
-       for (var x = 0; x < (c.width/zoomVal); x++) { 
-         if ((x)==index+1) {
-           ctx.moveTo(x*zoomVal,(ch-((ch/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-        }else{
-           ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-       }}
-       ctx.strokeStyle = '#D4D4D4'
-     ctx.stroke();
+    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+    //      if ((x)==index+1) {
+    //        ctx.moveTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+    //     }else{
+    //        ctx.lineTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+    //    }}
+    //    ctx.strokeStyle = '#D4D4D4'
+    //  ctx.stroke();
      
-     ctx.beginPath();
-       for (var x = 0; x < (c.width/zoomVal); x++) { 
-         if ((x)==index+1||diff1ValArr[x]>=0) {
-           ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-        }else{
-           ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-       }}
-     ctx.strokeStyle = 'red'
-     ctx.stroke();
-     ctx.beginPath();
-       for (var x = 0; x < (c.width/zoomVal); x++) { 
-         if ((x)==index+1) {
-           ctx.moveTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-        }else{
-           ctx.lineTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-       }}
-     ctx.strokeStyle = 'red'
-     ctx.stroke();
+    //  ctx.beginPath();
+    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+    //      if ((x)==index+1||diff1ValArr[x]>=0) {
+    //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+    //     }else{
+    //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+    //    }}
+    //  ctx.strokeStyle = 'red'
+    //  ctx.stroke();
+    //  ctx.beginPath();
+    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+    //      if ((x)==index+1) {
+    //        ctx.moveTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+    //     }else{
+    //        ctx.lineTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+    //    }}
+    //  ctx.strokeStyle = 'red'
+    //  ctx.stroke();
 
-     ctx.beginPath();
-       for (var x = 0; x < (c.width/zoomVal); x++) { 
-         if ((x)==index+1||diff1ValArr[x]<=0) {
-           ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-        }else{
-           ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-       }}
-     ctx.strokeStyle = 'green'
-     ctx.stroke();
-     ctx.beginPath();
-       for (var x = 0; x < (c.width/zoomVal); x++) { 
-         if ((x)==index+1) {
-           ctx.moveTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-        }else{
-           ctx.lineTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-       }}
-     ctx.strokeStyle = 'green'
-     ctx.stroke();
+    //  ctx.beginPath();
+    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+    //      if ((x)==index+1||diff1ValArr[x]<=0) {
+    //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+    //     }else{
+    //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+    //    }}
+    //  ctx.strokeStyle = 'green'
+    //  ctx.stroke();
+    //  ctx.beginPath();
+    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+    //      if ((x)==index+1) {
+    //        ctx.moveTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+    //     }else{
+    //        ctx.lineTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+    //    }}
+    //  ctx.strokeStyle = 'green'
+    //  ctx.stroke();
 
-ctx.lineWidth = 3;
-for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
-  // console.log(ecgLowPeak[1][0])
-  ctx.beginPath();
-  for (let index1 = 0; index1 < c.height; index1++) {
-    if (index1>(ch-100-((28*(40/1.5)/4095)*ecgPeaks[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))&&index1<(ch-100-((28*(40/1.5)/4095)*ecgLowPeak[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))) {
+// ctx.lineWidth = 3;
+// for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
+//   // console.log(ecgLowPeak[1][0])
+//   ctx.beginPath();
+//   for (let index1 = 0; index1 < c.height; index1++) {
+//     if (index1>(ch-100-((28*(40/1.5)/4095)*ecgPeaks[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))&&index1<(ch-100-((28*(40/1.5)/4095)*ecgLowPeak[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))) {
       
-    ctx.lineTo(ecgPeaks[index2][1]*zoomVal,index1);
-    }else{
-      ctx.moveTo(ecgPeaks[index2][1]*zoomVal,index1);
-    }
-  }
-  ctx.strokeStyle = '#2781C2DD'
-     ctx.stroke();
-}
+//     ctx.lineTo(ecgPeaks[index2][1]*zoomVal,index1);
+//     }else{
+//       ctx.moveTo(ecgPeaks[index2][1]*zoomVal,index1);
+//     }
+//   }
+//   ctx.strokeStyle = '#2781C2DD'
+//      ctx.stroke();
+// }
 ctx.lineWidth = 1;
      ctx.font = "42px serif";
      
