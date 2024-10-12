@@ -354,7 +354,7 @@
       //ECG Grid 
       var gridCounter = 0;
       for (var x = 40 / timeToCount; x < (c.width / zoomVal); x += (40 / timeToCount) * (zoomVal / .5)) {
-        if (gridCounter < 5) {
+        if (gridCounter == 4) {
           ctx.lineWidth = 2;
           gridCounter = 0;
         } else {
@@ -369,7 +369,7 @@
 
       }
       for (var x = (40 / timeToCount) * 4; x < ((c.height) / zoomVal); x += (40 / timeToCount) * (zoomVal / .5)) {
-        if (gridCounter < 5) {
+        if (gridCounter == 4) {
           ctx.lineWidth = 2;
           gridCounter = 0;
         } else {
