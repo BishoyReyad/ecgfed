@@ -1,343 +1,350 @@
 <!DOCTYPE html>
+
 <head>
   <title>ECG Test</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
-<style>
-      * {
-   margin: 0;
-   padding: 0;
-}
-body, html {
-   touch-action: pan-x pan-y ;
-   height:100%;
-   width:100%;
-   overflow: hidden;
-   position:absolute;
-}
-#canvas {
-   height:100%; width:100%;
-}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
 
-</style>
+    body,
+    html {
+      touch-action: pan-x pan-y;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      position: absolute;
+    }
+
+    #canvas {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
 </head>
+
 <body>
   <canvas id="c"></canvas>
   <script>
-    let appKey ="bea3cf75e9f8f18cc70a";
-    let secretKey ="6e94b23f65859b39498d";
-    let socket = new WebSocket("wss://ws-eu.pusher.com/app/"+appKey+"?client=js&version=2.1&protocol=7 HTTP/1.1");
+    let appKey = "bea3cf75e9f8f18cc70a";
+    let secretKey = "6e94b23f65859b39498d";
+    let socket = new WebSocket("wss://ws-eu.pusher.com/app/" + appKey + "?client=js&version=2.1&protocol=7 HTTP/1.1");
     var c = document.getElementById("c");
     var ctx = c.getContext("2d");
     c.width = window.innerWidth
     c.height = window.innerHeight
-    var cw = c.width ;
-    var ch = c.height ;
-    var cx = cw ,
-    cy = ch ;
+    var cw = c.width;
+    var ch = c.height;
+    var cx = cw,
+      cy = ch;
     var rad = Math.PI / 180;
-    var w =cw,
-    h = ch;
-    var ADC=[];
+    var w = cw,
+      h = ch;
+    var ADC = [];
     var Adc;
-    var  index=0;
-    var zoomVal=.5,zoomLen=0,previousZoomLen=0,zoomMin=.1,zoomMax=1;
-    window.addEventListener("resize", function() {
+    var index = 0;
+    var zoomVal = .5, zoomLen = 0, previousZoomLen = 0, zoomMin = .1, zoomMax = 1;
+    window.addEventListener("resize", function () {
       c.width = window.innerWidth
       c.height = window.innerHeight
       cw = c.width;
       ch = c.height;
-      cw=cw
-      cx = cw ,
-      cy = ch ;
+      cw = cw
+      cx = cw,
+        cy = ch;
       w = cw;
       h = ch;
-      });
-      
-    socket.onopen = function(e) {
+    });
+
+    socket.onopen = function (e) {
       console.log("[open] Connection established");
-    
+
     };
-    const version="Alpha Version";
-    const versionLen = Math.ceil(ctx.measureText(version).width); 
-    const identityName="Bishoy Reyad";
+    const version = "Alpha Version";
+    const versionLen = Math.ceil(ctx.measureText(version).width);
+    const identityName = "Bishoy Reyad";
     const identityNameLen = Math.ceil(ctx.measureText(identityName).width);
-    const identityFaculty="Faculty of Medicine, Sohag University";
+    const identityFaculty = "Faculty of Medicine, Sohag University";
     const identityFacultyLen = Math.ceil(ctx.measureText(identityFaculty).width);
 
-    const LNS1=  "Lead 1 is not connected" 
-    const LNS1Len  = Math.ceil(ctx.measureText(LNS1).width); 
-    const LNS2=  "Lead 2 is not connected"
-    const LNS2Len  = Math.ceil(ctx.measureText(LNS2).width); 
-    const LNS12= "Leads 1,2 are not connected" 
+    const LNS1 = "Lead 1 is not connected"
+    const LNS1Len = Math.ceil(ctx.measureText(LNS1).width);
+    const LNS2 = "Lead 2 is not connected"
+    const LNS2Len = Math.ceil(ctx.measureText(LNS2).width);
+    const LNS12 = "Leads 1,2 are not connected"
     const LNS12Len = Math.ceil(ctx.measureText(LNS12).width);
 
-    var ADCArray1=[];
-    var stringIndex=0 ;var ADCArrayDraw=[];
-    var arrayIndex=0;
-    var ADCString=[];
-    var millitime=0;
-    var nextTime=0;
-    var startState=0,maxState=3,wState=0;
-    var leadsState=0;
-    function stringToArray(string,array){
-      var ADCArray=[];
+    var ADCArray1 = [];
+    var stringIndex = 0; var ADCArrayDraw = [];
+    var arrayIndex = 0;
+    var ADCString = [];
+    var millitime = 0;
+    var nextTime = 0;
+    var startState = 0, maxState = 3, wState = 0;
+    var leadsState = 0;
+    function stringToArray(string, array) {
+      var ADCArray = [];
       ADCArray = string.split(" ");
-      ADCArray[ADCArray.length-1]!=""?null:ADCArray.splice(ADCArray.length-1);
+      ADCArray[ADCArray.length - 1] != "" ? null : ADCArray.splice(ADCArray.length - 1);
       for (let index1 = 0; index1 < ADCArray.length; index1++) {
-        array[index1]=parseInt(ADCArray[index1]);
-  
+        array[index1] = parseInt(ADCArray[index1]);
+
       }
-      if (array.length>ADCArray.length) {
-      for (let index = array.length-1; index >= 0; index--) {
-        if (array.length>ADCArray.length) {
-          array.splice(array.length-1);
-        }else{
-          break;
+      if (array.length > ADCArray.length) {
+        for (let index = array.length - 1; index >= 0; index--) {
+          if (array.length > ADCArray.length) {
+            array.splice(array.length - 1);
+          } else {
+            break;
+          }
         }
-      }}
+      }
     }
 
-window.addEventListener(
-  "touchmove",
-  (e) => {
-    switch (e.touches.length) {
-      case 2:
-      var x1 = Math.ceil(event.touches[0].clientX);
-      var y1=  Math.ceil(event.touches[0].clientY);
-      var x2 = Math.ceil(event.touches[1].clientX);
-      var y2 = Math.ceil(event.touches[1].clientY);
-      zoomLen=Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2));
-      if ((zoomLen-previousZoomLen)!=0 && (zoomLen-previousZoomLen)!=zoomLen) {
-         if (((zoomLen-previousZoomLen)>0 && zoomVal<zoomMax) ||
-             ((zoomLen-previousZoomLen)<0 && zoomVal>zoomMin)) {
-               zoomVal+=Math.ceil(zoomLen-previousZoomLen)/1000;
-               zoomVal>zoomMax?zoomVal=zoomMax:null;
-               zoomVal<zoomMin?zoomVal=zoomMin:null;
-         }
-      }
-      previousZoomLen=zoomLen;
-        break;
-      default:
-      console.log("There is a problem in zooming");
-        break;
-    }
-  },
-  false,
-);
-window.addEventListener("touchend",
-  (e) => {
-   previousZoomLen=0;
-  },false,
-);
-    socket.onmessage = function(event) {
-      console.log(`[message] Data received from server: ${event.data}`);
-      if(JSON.parse(event.data).event=="pusher:connection_established"){
-      var hash = CryptoJS.HmacSHA256(JSON.parse(JSON.parse(event.data).data).socket_id+":private-ECGfed", secretKey);
-      var hashInHex = CryptoJS.enc.Hex.stringify(hash);
-      socket.send("{\"event\": \"pusher:subscribe\", \"data\": {\"channel\": \"private-ECGfed\" ,\"auth\": \""+appKey+":"+hashInHex+"\"} }")
-    }else if(JSON.parse(event.data).data=="D1 connection established successfully") {
-      millitime=Date.now();
-      state=0
-      startState=0
-      wState=0
-      leadsState=0;
-      ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-      ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-    }else if(JSON.parse(JSON.parse(event.data).data).x=="LSN:1") {
-      leadsState=1;
-      startState=0
-      wState=0
-      ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-      ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-    }else if(JSON.parse(JSON.parse(event.data).data).x=="LSN:2") {
-      leadsState=2;
-      startState=0
-      wState=0
-      ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-      ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-    }else if(JSON.parse(JSON.parse(event.data).data).x=="LSN:1,2") {
-      leadsState=3;
-      startState=0
-      wState=0
-      ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-      ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0    
-    }else{
-      leadsState=0;
-      nextTime=Date.now();
-      ADCString[wState]=JSON.parse(JSON.parse(event.data).data).x; 
-      // console.log(ADCString[wState]);
-      wState==maxState?(startState==1?null:(startState=1,stringToArray(ADCString[0],ADCArray1))):null;
-      // console.log(`${nextTime-millitime} ${ADCArray1.length}`)
-      wState++;
-      // console.log(wState) 
-      millitime=nextTime
-    }
-    };
-  var minValDiff=[0,0],maxValDiff=[0,0];
-  var ecgPeak=[0,0];
-  var ecgPeaks=[[1,0],[0,0]];
-  var previousEcgPeak=0;
-  var ecgLowPeak=[[0,0],[0,0]]
-  var maxMinInterval=150;
-  var firstLowPeak=0;
-  var QSInterval=30;
-  var diffLenVal=1000;
-  var mT=0,nT=0
-  var diff1ValArr=[];
-  var valChecker=0, valCheckerCounte=0;
-  var pulseCounter=0;
-  var pulse=[0,0];
-  var pulseDelay=1000;
-  var heartBeatRate=0;
-  var heartReatMean=0;
-  var delayErr=0;
-setInterval(() => {
-  if (startState) {
-    mT=Date.now();
-    for (let index2 = 0; index2 <40; index2++) { 
-    // index>=(c.width/zoomVal)?(index=0):index++;
-    if (index>=(c.width/zoomVal)) {
-      index=0;
-      for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
-      ecgPeaks.splice(index2);
-      } 
-      ecgPeaks[0][0]=1
-    }else{
-      index++;
-    }
-    if (arrayIndex>=ADCArray1.length) {
-      arrayIndex=0;
-      if (wState<=1) {
-        startState=0;
-        break;
-      }else{ wState--;}
-      // console.log(wState) 
-      for (let index = 0; index < ADCString.length-1; index++) {
-        ADCString[index] = ADCString[index+1];
-      }
-      ADCString.splice(ADCString.length-1);
-      // console.log(ADCString[0]);
-      stringToArray(ADCString[0],ADCArray1)
-    }else{arrayIndex++}
-    ADCArrayDraw[index]=ADCArray1[arrayIndex]
-    diff1ValArr[index]= (index==0?(ADCArrayDraw[0]-ADCArrayDraw[ADCArrayDraw.length-1]):(ADCArrayDraw[index]-ADCArrayDraw[index-1])) 
-    ADCArrayDraw[index]>ecgPeak[0]?(ecgPeak[0]=ADCArrayDraw[index],ecgPeak[1]=index):null;
-    diff1ValArr[index]>maxValDiff[0]?(maxValDiff[0]=diff1ValArr[index],maxValDiff[1]=index):null;
-    diff1ValArr[index]<minValDiff[0]?(minValDiff[0]=diff1ValArr[index],minValDiff[1]=index):null;
-    minValDiff[1]-maxValDiff[1]<0 && ecgPeak>0?(maxValDiff[1]=ADCArrayDraw.length-maxValDiff[1],
-    minValDiff[1]=minValDiff[1]+maxValDiff[1]):null
-    
-    if (ecgPeak[1]>=maxValDiff[1] && ecgPeak[1]<=minValDiff[1] &&((minValDiff[1]-maxValDiff[1])<maxMinInterval+10)) {
-      ecgPeak[0]>previousEcgPeak?valCheckerCounte=0:null;
-      previousEcgPeak=ecgPeak[0];
-      diff1ValArr[index]<0 && ADCArrayDraw[index]<ADCArrayDraw[minValDiff[1]] ?
-      (ecgLowPeak.splice((ecgPeaks[0][0]),0,[ADCArrayDraw[index],index]),valCheckerCounte=0):null;
-        if (valCheckerCounte<6) {
-          valCheckerCounte++;
-        }else{
-          if(((ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])+(maxValDiff[0]-minValDiff[0]))>100 &&
-             (ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])>=(diffLenVal*2)/3) {
-            var firstLowPeakIndex=ecgPeak[1];
-            firstLowPeak=ecgPeak[0];
-            while (1) {
-              firstLowPeakIndex==0?firstLowPeakIndex=ADCArrayDraw.length-1:firstLowPeakIndex--; 
-              if(ADCArrayDraw[firstLowPeakIndex]>firstLowPeak && diff1ValArr[firstLowPeakIndex]>=0){
-                break; 
+    window.addEventListener(
+      "touchmove",
+      (e) => {
+        switch (e.touches.length) {
+          case 2:
+            var x1 = Math.ceil(event.touches[0].clientX);
+            var y1 = Math.ceil(event.touches[0].clientY);
+            var x2 = Math.ceil(event.touches[1].clientX);
+            var y2 = Math.ceil(event.touches[1].clientY);
+            zoomLen = Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+            if ((zoomLen - previousZoomLen) != 0 && (zoomLen - previousZoomLen) != zoomLen) {
+              if (((zoomLen - previousZoomLen) > 0 && zoomVal < zoomMax) ||
+                ((zoomLen - previousZoomLen) < 0 && zoomVal > zoomMin)) {
+                zoomVal += Math.ceil(zoomLen - previousZoomLen) / 1000;
+                zoomVal > zoomMax ? zoomVal = zoomMax : null;
+                zoomVal < zoomMin ? zoomVal = zoomMin : null;
               }
-              firstLowPeak=ADCArrayDraw[firstLowPeakIndex];
-
             }
-
-            ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex<0?
-            (console.log("prob"),
-             console.log(`${firstLowPeakIndex} ${ecgLowPeak[(ecgPeaks[0][0])][1]}`),
-             console.log("prob"),
-            firstLowPeakIndex=ADCArrayDraw.length-firstLowPeakIndex,
-            ecgLowPeak[(ecgPeaks[0][0])][1] = ecgLowPeak[(ecgPeaks[0][0])][1]+firstLowPeakIndex):null;
-
-            if((ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)<=60) {
-              console.log(`${QSInterval} ${QSInterval*1.5}`)
-              QSInterval=(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)>0?
-              (ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex):QSInterval;
-              diffLenVal=(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])][0])
-              maxMinInterval=(minValDiff[1]-maxValDiff[1])
-
-              // console.log(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])]);
-              // console.log(maxValDiff[0]-minValDiff[0]);
-              console.log(" ")
-              pulseCounter++;
-              pulse[1]=pulse[0];
-              pulse[0]=ecgPeak[1];
-              ecgPeaks.splice((ecgPeaks[0][0]++),0,[ecgPeak[0],ecgPeak[1]])
-              // console.log(ecgPeaks[ecgPeaks[0][0]-1])
-              // console.log(ecgLowPeak[ecgPeaks[0][0]-1])
-              pulseDelay=pulse[0]-pulse[1];
-              pulseDelay<0?pulseDelay=((c.width/zoomVal)-pulse[1])+pulse[0]:null
-              heartBeatRate=Math.ceil((1/(pulseDelay/666.666666))*60)
-              // console.log(heartBeatRate)
-              ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-              ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-              delayErr=0;
-              valCheckerCounte=0
-            }else{
-              console.log(`${maxValDiff[0]} ${minValDiff[0]}`)
-        console.log(`${QSInterval} ${(ecgLowPeak[(ecgPeaks[0][0])][1]-firstLowPeakIndex)}`) 
-        console.log(`${firstLowPeakIndex} ${ecgLowPeak[(ecgPeaks[0][0])][1]}`) 
-        console.log(" ")
-              ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-              ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-              
-              delayErr=0;
-      }}
-       }
-    }else{
-      delayErr++
-      if ((delayErr>2000&&ecgPeak[0]>=previousEcgPeak)||(maxValDiff[0]-minValDiff[0])>1000) {
-        ecgPeak[0]=0,maxValDiff[0]=0,minValDiff[0]=0
-        ecgPeak[1]=0,maxValDiff[1]=0,minValDiff[1]=0
-        delayErr=0
+            previousZoomLen = zoomLen;
+            break;
+          default:
+            console.log("There is a problem in zooming");
+            break;
+        }
+      },
+      false,
+    );
+    window.addEventListener("touchend",
+      (e) => {
+        previousZoomLen = 0;
+      }, false,
+    );
+    socket.onmessage = function (event) {
+      console.log(`[message] Data received from server: ${event.data}`);
+      if (JSON.parse(event.data).event == "pusher:connection_established") {
+        var hash = CryptoJS.HmacSHA256(JSON.parse(JSON.parse(event.data).data).socket_id + ":private-ECGfed", secretKey);
+        var hashInHex = CryptoJS.enc.Hex.stringify(hash);
+        socket.send("{\"event\": \"pusher:subscribe\", \"data\": {\"channel\": \"private-ECGfed\" ,\"auth\": \"" + appKey + ":" + hashInHex + "\"} }")
+      } else if (JSON.parse(event.data).data == "D1 connection established successfully") {
+        millitime = Date.now();
+        state = 0
+        startState = 0
+        wState = 0
+        leadsState = 0;
+        ecgPeak[0] = 0, maxValDiff[0] = 0, minValDiff[0] = 0
+        ecgPeak[1] = 0, maxValDiff[1] = 0, minValDiff[1] = 0
+      } else if (JSON.parse(JSON.parse(event.data).data).x == "LSN:1") {
+        leadsState = 1;
+        startState = 0
+        wState = 0
+        ecgPeak[0] = 0, maxValDiff[0] = 0, minValDiff[0] = 0
+        ecgPeak[1] = 0, maxValDiff[1] = 0, minValDiff[1] = 0
+      } else if (JSON.parse(JSON.parse(event.data).data).x == "LSN:2") {
+        leadsState = 2;
+        startState = 0
+        wState = 0
+        ecgPeak[0] = 0, maxValDiff[0] = 0, minValDiff[0] = 0
+        ecgPeak[1] = 0, maxValDiff[1] = 0, minValDiff[1] = 0
+      } else if (JSON.parse(JSON.parse(event.data).data).x == "LSN:1,2") {
+        leadsState = 3;
+        startState = 0
+        wState = 0
+        ecgPeak[0] = 0, maxValDiff[0] = 0, minValDiff[0] = 0
+        ecgPeak[1] = 0, maxValDiff[1] = 0, minValDiff[1] = 0
+      } else {
+        leadsState = 0;
+        nextTime = Date.now();
+        ADCString[wState] = JSON.parse(JSON.parse(event.data).data).x;
+        // console.log(ADCString[wState]);
+        wState == maxState ? (startState == 1 ? null : (startState = 1, stringToArray(ADCString[0], ADCArray1))) : null;
+        // console.log(`${nextTime-millitime} ${ADCArray1.length}`)
+        wState++;
+        // console.log(wState) 
+        millitime = nextTime
       }
-    }
+    };
+    var minValDiff = [0, 0], maxValDiff = [0, 0];
+    var ecgPeak = [0, 0];
+    var ecgPeaks = [[1, 0], [0, 0]];
+    var previousEcgPeak = 0;
+    var ecgLowPeak = [[0, 0], [0, 0]]
+    var maxMinInterval = 150;
+    var firstLowPeak = 0;
+    var QSInterval = 30;
+    var diffLenVal = 1000;
+    var mT = 0, nT = 0
+    var diff1ValArr = [];
+    var valChecker = 0, valCheckerCounte = 0;
+    var pulseCounter = 0;
+    var pulse = [0, 0];
+    var pulseDelay = 1000;
+    var heartBeatRate = 0;
+    var heartReatMean = 0;
+    var delayErr = 0;
+    setInterval(() => {
+      if (startState) {
+        mT = Date.now();
+        for (let index2 = 0; index2 < 40; index2++) {
+          // index>=(c.width/zoomVal)?(index=0):index++;
+          if (index >= (c.width / zoomVal)) {
+            index = 0;
+            for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
+              ecgPeaks.splice(index2);
+            }
+            ecgPeaks[0][0] = 1
+          } else {
+            index++;
+          }
+          if (arrayIndex >= ADCArray1.length) {
+            arrayIndex = 0;
+            if (wState <= 1) {
+              startState = 0;
+              break;
+            } else { wState--; }
+            // console.log(wState) 
+            for (let index = 0; index < ADCString.length - 1; index++) {
+              ADCString[index] = ADCString[index + 1];
+            }
+            ADCString.splice(ADCString.length - 1);
+            // console.log(ADCString[0]);
+            stringToArray(ADCString[0], ADCArray1)
+          } else { arrayIndex++ }
+          ADCArrayDraw[index] = ADCArray1[arrayIndex]
+          diff1ValArr[index] = (index == 0 ? (ADCArrayDraw[0] - ADCArrayDraw[ADCArrayDraw.length - 1]) : (ADCArrayDraw[index] - ADCArrayDraw[index - 1]))
+          ADCArrayDraw[index] > ecgPeak[0] ? (ecgPeak[0] = ADCArrayDraw[index], ecgPeak[1] = index) : null;
+          diff1ValArr[index] > maxValDiff[0] ? (maxValDiff[0] = diff1ValArr[index], maxValDiff[1] = index) : null;
+          diff1ValArr[index] < minValDiff[0] ? (minValDiff[0] = diff1ValArr[index], minValDiff[1] = index) : null;
+          minValDiff[1] - maxValDiff[1] < 0 && ecgPeak > 0 ? (maxValDiff[1] = ADCArrayDraw.length - maxValDiff[1],
+            minValDiff[1] = minValDiff[1] + maxValDiff[1]) : null
 
-    nT=Date.now()
-  }
+          if (ecgPeak[1] >= maxValDiff[1] && ecgPeak[1] <= minValDiff[1] && ((minValDiff[1] - maxValDiff[1]) < maxMinInterval + 10)) {
+            ecgPeak[0] > previousEcgPeak ? valCheckerCounte = 0 : null;
+            previousEcgPeak = ecgPeak[0];
+            diff1ValArr[index] < 0 && ADCArrayDraw[index] < ADCArrayDraw[minValDiff[1]] ?
+              (ecgLowPeak.splice((ecgPeaks[0][0]), 0, [ADCArrayDraw[index], index]), valCheckerCounte = 0) : null;
+            if (valCheckerCounte < 6) {
+              valCheckerCounte++;
+            } else {
+              if (((ecgPeak[0] - ecgLowPeak[(ecgPeaks[0][0])][0]) + (maxValDiff[0] - minValDiff[0])) > 100 &&
+                (ecgPeak[0] - ecgLowPeak[(ecgPeaks[0][0])][0]) >= (diffLenVal * 2) / 3) {
+                var firstLowPeakIndex = ecgPeak[1];
+                firstLowPeak = ecgPeak[0];
+                while (1) {
+                  firstLowPeakIndex == 0 ? firstLowPeakIndex = ADCArrayDraw.length - 1 : firstLowPeakIndex--;
+                  if (ADCArrayDraw[firstLowPeakIndex] > firstLowPeak && diff1ValArr[firstLowPeakIndex] >= 0) {
+                    break;
+                  }
+                  firstLowPeak = ADCArrayDraw[firstLowPeakIndex];
 
-  if (ADCArrayDraw.length>(c.width/zoomVal)) {
-    for (let index2 = (c.width/zoomVal)-1; index2 < ADCArrayDraw.length-1; index2++) {
-      ADCArrayDraw.splice(index2);
-      diff1ValArr.splice(index2);
-    }
-  }
-}
+                }
 
-},59);
-    
-// function disableScroll() {
-//     // Get the current page scroll position
-//     scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-//     scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+                ecgLowPeak[(ecgPeaks[0][0])][1] - firstLowPeakIndex < 0 ?
+                  (console.log("prob"),
+                    console.log(`${firstLowPeakIndex} ${ecgLowPeak[(ecgPeaks[0][0])][1]}`),
+                    console.log("prob"),
+                    firstLowPeakIndex = ADCArrayDraw.length - firstLowPeakIndex,
+                    ecgLowPeak[(ecgPeaks[0][0])][1] = ecgLowPeak[(ecgPeaks[0][0])][1] + firstLowPeakIndex) : null;
 
-//         // if any scroll is attempted, set this to the previous value
-//         window.onscroll = function() {
-//             window.scrollTo(scrollLeft, scrollTop);
-//         };
-// }
+                if ((ecgLowPeak[(ecgPeaks[0][0])][1] - firstLowPeakIndex) <= 60) {
+                  console.log(`${QSInterval} ${QSInterval * 1.5}`)
+                  QSInterval = (ecgLowPeak[(ecgPeaks[0][0])][1] - firstLowPeakIndex) > 0 ?
+                    (ecgLowPeak[(ecgPeaks[0][0])][1] - firstLowPeakIndex) : QSInterval;
+                  diffLenVal = (ecgPeak[0] - ecgLowPeak[(ecgPeaks[0][0])][0])
+                  maxMinInterval = (minValDiff[1] - maxValDiff[1])
 
-    socket.onclose = function(event) {
+                  // console.log(ecgPeak[0]-ecgLowPeak[(ecgPeaks[0][0])]);
+                  // console.log(maxValDiff[0]-minValDiff[0]);
+                  console.log(" ")
+                  pulseCounter++;
+                  pulse[1] = pulse[0];
+                  pulse[0] = ecgPeak[1];
+                  ecgPeaks.splice((ecgPeaks[0][0]++), 0, [ecgPeak[0], ecgPeak[1]])
+                  // console.log(ecgPeaks[ecgPeaks[0][0]-1])
+                  // console.log(ecgLowPeak[ecgPeaks[0][0]-1])
+                  pulseDelay = pulse[0] - pulse[1];
+                  pulseDelay < 0 ? pulseDelay = ((c.width / zoomVal) - pulse[1]) + pulse[0] : null
+                  heartBeatRate = Math.ceil((1 / (pulseDelay / 666.666666)) * 60)
+                  // console.log(heartBeatRate)
+                  ecgPeak[0] = 0, maxValDiff[0] = 0, minValDiff[0] = 0
+                  ecgPeak[1] = 0, maxValDiff[1] = 0, minValDiff[1] = 0
+                  delayErr = 0;
+                  valCheckerCounte = 0
+                } else {
+                  console.log(`${maxValDiff[0]} ${minValDiff[0]}`)
+                  console.log(`${QSInterval} ${(ecgLowPeak[(ecgPeaks[0][0])][1] - firstLowPeakIndex)}`)
+                  console.log(`${firstLowPeakIndex} ${ecgLowPeak[(ecgPeaks[0][0])][1]}`)
+                  console.log(" ")
+                  ecgPeak[0] = 0, maxValDiff[0] = 0, minValDiff[0] = 0
+                  ecgPeak[1] = 0, maxValDiff[1] = 0, minValDiff[1] = 0
+
+                  delayErr = 0;
+                }
+              }
+            }
+          } else {
+            delayErr++
+            if ((delayErr > 2000 && ecgPeak[0] >= previousEcgPeak) || (maxValDiff[0] - minValDiff[0]) > 1000) {
+              ecgPeak[0] = 0, maxValDiff[0] = 0, minValDiff[0] = 0
+              ecgPeak[1] = 0, maxValDiff[1] = 0, minValDiff[1] = 0
+              delayErr = 0
+            }
+          }
+
+          nT = Date.now()
+        }
+
+        if (ADCArrayDraw.length > (c.width / zoomVal)) {
+          for (let index2 = (c.width / zoomVal) - 1; index2 < ADCArrayDraw.length - 1; index2++) {
+            ADCArrayDraw.splice(index2);
+            diff1ValArr.splice(index2);
+          }
+        }
+      }
+
+    }, 59);
+
+    // function disableScroll() {
+    //     // Get the current page scroll position
+    //     scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    //     scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+
+    //         // if any scroll is attempted, set this to the previous value
+    //         window.onscroll = function() {
+    //             window.scrollTo(scrollLeft, scrollTop);
+    //         };
+    // }
+
+    socket.onclose = function (event) {
       if (event.wasClean) {
         alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
       } else {
         alert('[close] Connection died');
       }
     };
-    
-    socket.onerror = function(error) {
+
+    socket.onerror = function (error) {
       alert(`[error]`);
     };
-     
-    var timeToCount=1.5 // In millis
+
+    var timeToCount = 1.5 // In millis
     function Draw() {
       //Background
       ctx.clearRect(0, 0, cw, ch);
@@ -345,33 +352,33 @@ setInterval(() => {
       ctx.fillStyle = "#000000"
       ctx.fill();
       //ECG Grid 
-      var gridCounter=0;
-      for (var x = 40/timeToCount; x < (c.width/zoomVal); x+=(40/timeToCount)*(zoomVal/.5)){
-        if(gridCounter==5){
+      var gridCounter = 0;
+      for (var x = 40 / timeToCount; x < (c.width / zoomVal); x += (40 / timeToCount) * (zoomVal / .5)) {
+        if (gridCounter < 5) {
           ctx.lineWidth = 2;
-          gridCounter=0;
-        }else{
+          gridCounter = 0;
+        } else {
           ctx.lineWidth = 1;
           gridCounter++;
         }
         ctx.beginPath();
-        ctx.moveTo(x,100);
-        ctx.lineTo(x,ch*0.90); 
+        ctx.moveTo(x, 100);
+        ctx.lineTo(x, ch * 0.90);
         ctx.strokeStyle = '#868686'
         ctx.stroke();
-        
+
       }
-      for (var x = (40/timeToCount)*4; x < ((c.height)/zoomVal); x+=(40/timeToCount)*(zoomVal/.5)){
-        if(gridCounter==5){
+      for (var x = (40 / timeToCount) * 4; x < ((c.height) / zoomVal); x += (40 / timeToCount) * (zoomVal / .5)) {
+        if (gridCounter < 5) {
           ctx.lineWidth = 2;
-          gridCounter=0;
-        }else{
+          gridCounter = 0;
+        } else {
           ctx.lineWidth = 1;
           gridCounter++;
         }
         ctx.beginPath();
-        ctx.moveTo(0,x);
-        ctx.lineTo((c.width/zoomVal),x); 
+        ctx.moveTo(0, x);
+        ctx.lineTo((c.width / zoomVal), x);
         ctx.strokeStyle = '#868686'
         ctx.stroke();
 
@@ -379,119 +386,122 @@ setInterval(() => {
       ctx.lineWidth = 2;
       ctx.shadowColor = "rgba(0, 0, 0, 0.6)"
       ctx.beginPath();
-       for (var x = 0; x < (c.width/zoomVal); x++) { 
-         if ((x)==index+1) {
-           ctx.moveTo(x*zoomVal,(ch-100-((27*(40/1.5)/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-        }else{
-           ctx.lineTo(x*zoomVal,(ch-100-((27*(40/1.5)/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-       }}
-     ctx.strokeStyle = '#FEFEFE'
-     ctx.stroke();
+      for (var x = 0; x < (c.width / zoomVal); x++) {
+        if ((x) == index + 1) {
+          ctx.moveTo(x * zoomVal, (ch - 100 - ((27 * (40 / 1.5) / 4095) * ADCArrayDraw[x] * zoomVal)) - ((ch / 2) - ((ch / 2) * zoomVal)));
+        } else {
+          ctx.lineTo(x * zoomVal, (ch - 100 - ((27 * (40 / 1.5) / 4095) * ADCArrayDraw[x] * zoomVal)) - ((ch / 2) - ((ch / 2) * zoomVal)));
+        }
+      }
+      ctx.strokeStyle = '#FEFEFE'
+      ctx.stroke();
 
 
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1) {
-    //        ctx.moveTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = '#EEEEEE'
-    //  ctx.stroke();
+      //  ctx.beginPath();
+      //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+      //      if ((x)==index+1) {
+      //        ctx.moveTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+      //     }else{
+      //        ctx.lineTo(x*zoomVal,(ch-((ch/4095)*ADCArrayDraw[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+      //    }}
+      //  ctx.strokeStyle = '#EEEEEE'
+      //  ctx.stroke();
       ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1) {
-    //        ctx.moveTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //    ctx.strokeStyle = '#D4D4D4'
-    //  ctx.stroke();
-     
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1||diff1ValArr[x]>=0) {
-    //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'red'
-    //  ctx.stroke();
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1) {
-    //        ctx.moveTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'red'
-    //  ctx.stroke();
+      //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+      //      if ((x)==index+1) {
+      //        ctx.moveTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+      //     }else{
+      //        ctx.lineTo(x*zoomVal,(ch-100-((28*(40/1.5)/4095)*ecgPeak[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+      //    }}
+      //    ctx.strokeStyle = '#D4D4D4'
+      //  ctx.stroke();
 
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1||diff1ValArr[x]<=0) {
-    //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'green'
-    //  ctx.stroke();
-    //  ctx.beginPath();
-    //    for (var x = 0; x < (c.width/zoomVal); x++) { 
-    //      if ((x)==index+1) {
-    //        ctx.moveTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
-    //     }else{
-    //        ctx.lineTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
-    //    }}
-    //  ctx.strokeStyle = 'green'
-    //  ctx.stroke();
+      //  ctx.beginPath();
+      //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+      //      if ((x)==index+1||diff1ValArr[x]>=0) {
+      //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+      //     }else{
+      //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+      //    }}
+      //  ctx.strokeStyle = 'red'
+      //  ctx.stroke();
+      //  ctx.beginPath();
+      //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+      //      if ((x)==index+1) {
+      //        ctx.moveTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+      //     }else{
+      //        ctx.lineTo(x*zoomVal,(ch-(minValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+      //    }}
+      //  ctx.strokeStyle = 'red'
+      //  ctx.stroke();
 
-// ctx.lineWidth = 3;
-// for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
-//   // console.log(ecgLowPeak[1][0])
-//   ctx.beginPath();
-//   for (let index1 = 0; index1 < c.height; index1++) {
-//     if (index1>(ch-100-((28*(40/1.5)/4095)*ecgPeaks[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))&&index1<(ch-100-((28*(40/1.5)/4095)*ecgLowPeak[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))) {
-      
-//     ctx.lineTo(ecgPeaks[index2][1]*zoomVal,index1);
-//     }else{
-//       ctx.moveTo(ecgPeaks[index2][1]*zoomVal,index1);
-//     }
-//   }
-//   ctx.strokeStyle = '#2781C2DD'
-//      ctx.stroke();
-// }
-ctx.lineWidth = 1;
-     ctx.font = "42px serif";
-     
-     ctx.fillStyle = "#AFAFAF"
+      //  ctx.beginPath();
+      //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+      //      if ((x)==index+1||diff1ValArr[x]<=0) {
+      //        ctx.moveTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+      //     }else{
+      //        ctx.lineTo(x*zoomVal,(ch-(diff1ValArr[x]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+      //    }}
+      //  ctx.strokeStyle = 'green'
+      //  ctx.stroke();
+      //  ctx.beginPath();
+      //    for (var x = 0; x < (c.width/zoomVal); x++) { 
+      //      if ((x)==index+1) {
+      //        ctx.moveTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal)));
+      //     }else{
+      //        ctx.lineTo(x*zoomVal,(ch-(maxValDiff[0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))); 
+      //    }}
+      //  ctx.strokeStyle = 'green'
+      //  ctx.stroke();
+
+      // ctx.lineWidth = 3;
+      // for (let index2 = 1; index2 < ecgPeaks.length; index2++) {
+      //   // console.log(ecgLowPeak[1][0])
+      //   ctx.beginPath();
+      //   for (let index1 = 0; index1 < c.height; index1++) {
+      //     if (index1>(ch-100-((28*(40/1.5)/4095)*ecgPeaks[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))&&index1<(ch-100-((28*(40/1.5)/4095)*ecgLowPeak[index2][0]*zoomVal))-((ch/2)-((ch/2)*zoomVal))) {
+
+      //     ctx.lineTo(ecgPeaks[index2][1]*zoomVal,index1);
+      //     }else{
+      //       ctx.moveTo(ecgPeaks[index2][1]*zoomVal,index1);
+      //     }
+      //   }
+      //   ctx.strokeStyle = '#2781C2DD'
+      //      ctx.stroke();
+      // }
+      ctx.lineWidth = 1;
+      ctx.font = "42px serif";
+
+      ctx.fillStyle = "#AFAFAF"
       switch (leadsState) {
-        case 0:{
-          ctx.fillText(`Heart rate:        ${heartBeatRate}`, 10,44);
-          ctx.fillText(`Counted beats: ${pulseCounter}`, 10,88);
+        case 0: {
+          ctx.fillText(`Heart rate:        ${heartBeatRate}`, 10, 44);
+          ctx.fillText(`Counted beats: ${pulseCounter}`, 10, 88);
           break;
-          }
-        case 1:{
-          ctx.fillText(LNS1, 10,44);
+        }
+        case 1: {
+          ctx.fillText(LNS1, 10, 44);
           break;
-          }
-          case 2:{
-          ctx.fillText(LNS2, 10,44);
+        }
+        case 2: {
+          ctx.fillText(LNS2, 10, 44);
           break;
-          }
-          case 3:{
-          ctx.fillText(LNS12,10,44);
-          break;      
-      }}
-     ctx.font = "30px serif";
-     ctx.fillText(version, cw-(versionLen*3+20),30);
-     ctx.fillText(identityName, cw/2-(identityNameLen*1.4),ch-54);
-     ctx.fillText(identityFaculty, cw/2-(identityFacultyLen*1.4),ch-20);
-       requestId = window.requestAnimationFrame(Draw);
-     }
-     requestId = window.requestAnimationFrame(Draw);  
-     
-    
-      </script>
+        }
+        case 3: {
+          ctx.fillText(LNS12, 10, 44);
+          break;
+        }
+      }
+      ctx.font = "30px serif";
+      ctx.fillText(version, cw - (versionLen * 3 + 20), 30);
+      ctx.fillText(identityName, cw / 2 - (identityNameLen * 1.4), ch - 54);
+      ctx.fillText(identityFaculty, cw / 2 - (identityFacultyLen * 1.4), ch - 20);
+      requestId = window.requestAnimationFrame(Draw);
+    }
+    requestId = window.requestAnimationFrame(Draw);
+
+
+  </script>
 </body>
+
 </html>
