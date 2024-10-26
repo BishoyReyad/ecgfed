@@ -47,7 +47,7 @@
     var ADC = [];
     var Adc;
     var index = 0;
-    var zoomVal = .5, zoomLen = 0, previousZoomLen = 0, zoomMin = .1, zoomMax = 1;
+    // var zoomVal = .5, zoomLen = 0, previousZoomLen = 0, zoomMin = .1, zoomMax = 1;
     window.addEventListener("resize", function () {
       c.width = window.innerWidth
       c.height = window.innerHeight
@@ -59,7 +59,8 @@
       w = cw;
       h = ch;
     });
-
+    var zoomLen = 0, previousZoomLen = 0, zoomMin = .1, zoomMax = 1;
+    var zoomVal = zoomMax / 2;
     socket.onopen = function (e) {
       console.log("[open] Connection established");
 
@@ -352,6 +353,7 @@
       ctx.fillStyle = "#000000"
       ctx.fill();
       //ECG Grid 
+      //V lines
       var gridCounter = 0;
       for (var x = 40 / timeToCount; x < (c.width / zoomVal); x += (40 / timeToCount) * (zoomVal / .5)) {
         if (gridCounter == 4) {
@@ -362,12 +364,14 @@
           gridCounter++;
         }
         ctx.beginPath();
-        ctx.moveTo(x, 100);
+        ctx.moveTo(x, 108);
         ctx.lineTo(x, ch * 0.88);
         ctx.strokeStyle = '#868686'
         ctx.stroke();
 
       }
+      //H lines
+      gridCounter = 4;
       for (var x = (40 / timeToCount) * 4; x < (c.height * 0.88); x += (40 / timeToCount) * (zoomVal / .5)) {
         if (gridCounter == 4) {
           ctx.lineWidth = 2;
@@ -388,9 +392,9 @@
       ctx.beginPath();
       for (var x = 0; x < (c.width / zoomVal); x++) {
         if ((x) == index + 1) {
-          ctx.moveTo(x * zoomVal, (ch - 100 - ((27 * (40 / 1.5) / 4095) * ADCArrayDraw[x] * zoomVal)) - ((ch / 2) - ((ch / 2) * zoomVal)));
+          ctx.moveTo(x * zoomVal, (ch - ((27 * (40 / 1.5) / 4095) * ADCArrayDraw[x] * zoomVal)) - ((ch / 2) - ((27 * (40 / 1.5) / 2) * zoomVal)));
         } else {
-          ctx.lineTo(x * zoomVal, (ch - 100 - ((27 * (40 / 1.5) / 4095) * ADCArrayDraw[x] * zoomVal)) - ((ch / 2) - ((ch / 2) * zoomVal)));
+          ctx.lineTo(x * zoomVal, (ch - ((27 * (40 / 1.5) / 4095) * ADCArrayDraw[x] * zoomVal)) - ((ch / 2) - ((27 * (40 / 1.5) / 2) * zoomVal)));
         }
       }
       ctx.strokeStyle = '#FEFEFE'
